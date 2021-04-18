@@ -24,14 +24,7 @@ class AzureServiceBusJob extends Job implements JobContract
      */
     protected BrokeredMessage $job;
 
-    /**
-     * The queue that the job belongs to.
-     *
-     * @var string
-     */
-    protected string $queue;
-
-    /**
+    /**n
      * The raw payload on the queue.
      *
      * @var string
@@ -40,10 +33,10 @@ class AzureServiceBusJob extends Job implements JobContract
     /**
      * Create a new job instance.
      *
-     * @param \Illuminate\Container\Container                 $container
-     * @param \AzureServiceBus\ServiceBus\Internal\IServiceBus   $azure
+     * @param \Illuminate\Container\Container $container
+     * @param \AzureServiceBus\ServiceBus\Internal\IServiceBus $azure
      * @param \AzureServiceBus\ServiceBus\Models\BrokeredMessage $job
-     * @param string                                          $queue
+     * @param string $queue
      *
      * @return \OrigoEnergia\AzureServiceBusLaravelTopic\AzureJob
      */
@@ -59,7 +52,7 @@ class AzureServiceBusJob extends Job implements JobContract
     /**
      * Delete the job from the queue.
      */
-    public function delete(): void
+    public function delete()
     {
         parent::delete();
         $this->azure->deleteMessage($this->job);
@@ -70,7 +63,7 @@ class AzureServiceBusJob extends Job implements JobContract
      *
      * @param int $delay
      */
-    public function release($delay = 0): void
+    public function release($delay = 0)
     {
         $release = new \DateTime;
         $release->setTimezone(new \DateTimeZone('UTC'));
@@ -97,15 +90,6 @@ class AzureServiceBusJob extends Job implements JobContract
     public function getJobId(): string
     {
         return $this->job->getMessageId();
-    }
-    /**
-     * Get the IoC container instance.
-     *
-     * @return \Illuminate\Container\Container
-     */
-    public function getContainer(): Container
-    {
-        return $this->container;
     }
 
     /**
