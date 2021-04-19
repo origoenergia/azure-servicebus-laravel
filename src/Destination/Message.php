@@ -104,6 +104,17 @@ class Message
     {
         return $this->brokeredMessage->getCorrelationId();
     }
+    
+    public function setLabel(string label): self
+    {
+        $this->brokeredMessage->setLabel($label);
+        return $this;
+    }
+
+    public function getLabel(): ?string
+    {
+        return $this->brokeredMessage->getLabel();
+    }
 
     public function setMessageId($messageId): self
     {
