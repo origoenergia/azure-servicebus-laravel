@@ -41,8 +41,6 @@ class Consumer implements ConsumerInterface
         $options = new ReceiveMessageOptions();
 
         $options->setReceiveAndDelete();
-        // Se remover a mensagem n fica bloqueada para outros consumidores receberem ao mesmo tempo
-        // $options->setPeekLock();
 
         try {
             $message = $this->azureServiceBusClient->receiveSubscriptionMessage($destinationName ?? $this->destinationName, $consumerName ?? $this->name, $options);
