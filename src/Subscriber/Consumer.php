@@ -38,13 +38,13 @@ class Consumer implements ConsumerInterface
 
     public function receiveMessage(?string $consumerName = null, ?string $destinationName = null, ?ReceiveMessageOptions $options = null): ?self
     {
-        $options = new ReceiveMessageOptions();
+        $opt = is_null($options) ? new ReceiveMessageOptions() : $options;
 
-        $options->setReceiveAndDelete();
-
+        $opt->setReceiveAndDelete();
+        
         try {
             $message = $this->azureServiceBusClient->receiveSubscriptionMessage($destinationName ?? $this->destinationName, $consumerName ?? $this->name, $options);
-            $receivedMessage = $message != null && $message != '';
+            $receivedMessage = $message != null ||$message != '';
 
             if ($receivedMessage) {
                 $this->formatReceivedMessage($message);
