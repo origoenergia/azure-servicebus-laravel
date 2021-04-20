@@ -121,12 +121,19 @@ class BaseQueueContext extends Queue implements QueueContract
      */
     public function pop($queue = null): ?Job
     {
-        $popped = $this->receiveInternal($this->getQueue($queue), $this->receiveOptions);
-        if (empty($popped)) {
+        try {
+            $popped = $this->receiveInternal($this->getQueue($queue), $this->receiveOptions);
+
+            if (empty($popped)) {
+                return null;
+            }
+
+            $rawMessage = $popped->getBody()->getContents();
+
+            return new AzureServiceBusJob($this->container, $this->azureServiceBusClient, $popped, $this->getQueue($queue), $rawMessage);
+        } catch (Exception $e) {
             return null;
         }
-        $rawMessage = $popped->getBody()->getContents();
-        return new AzureServiceBusJob($this->container, $this->azureServiceBusClient, $popped, $this->getQueue($queue), $rawMessage);
     }
 
     /**
