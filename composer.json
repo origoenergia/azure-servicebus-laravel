@@ -38,6 +38,9 @@
             "providers": [
                 "OrigoEnergia\\AzureServiceBusLaravel\\Support\\ServiceProvider"
             ]
-        }
+        },
+        "aliases": {
+            "AzureServiceBus": "OrigoEnergia\\AzureServiceBusLaravel\\Support\\AzureServiceBus"
+        }        
     }
 }
