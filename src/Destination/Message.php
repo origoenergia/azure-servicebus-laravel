@@ -105,7 +105,7 @@ class Message
         return $this->brokeredMessage->getCorrelationId();
     }
     
-    public function setLabel(string label): self
+    public function setLabel(string $label): self
     {
         $this->brokeredMessage->setLabel($label);
         return $this;
