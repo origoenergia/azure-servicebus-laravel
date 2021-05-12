@@ -12,8 +12,6 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     {
         $manager = $this->app['queue'];
         $this->registerConnector($manager);
-
-        $this->publishes([__DIR__ . '/Config/azureservicebus.php' => config_path('azureservicebus.php')], 'config');
     }
 
     public function provides(): array
@@ -26,8 +24,6 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         App::bind('azureservicebus', function () {
             return Queue::connection('azureservicebus');
         });
-
-        $this->mergeConfigFrom(__DIR__ . '/Config/azureservicebus.php', 'azureservicebus');
     }
 
     private function registerConnector($manager)
