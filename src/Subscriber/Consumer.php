@@ -8,6 +8,7 @@ use AzureServiceBus\ServiceBus\Internal\IServiceBus;
 use AzureServiceBus\ServiceBus\Models\BrokeredMessage;
 use AzureServiceBus\ServiceBus\Models\SubscriptionInfo;
 use AzureServiceBus\ServiceBus\Models\ReceiveMessageOptions;
+use AzureServiceBus\ServiceBus\Models\ReceiveMode;
 use OrigoEnergia\AzureServiceBusLaravel\Utils\ErrorHandler;
 use OrigoEnergia\AzureServiceBusLaravel\Destination\Message;
 
@@ -36,15 +37,22 @@ class Consumer implements ConsumerInterface
         return $this;
     }
 
-    public function receiveMessage(?string $consumerName = null, ?string $destinationName = null, ?ReceiveMessageOptions $options = null): ?self
+    public function forSubscription(string $subscription): self
     {
-        $opt = is_null($options) ? new ReceiveMessageOptions() : $options;
+        $this->name = $subscription;
+        return $this;
+    }
 
-        $opt->setReceiveAndDelete();
-        
+    public function receiveMessage(int $timeout = 0, int $mode = ReceiveMode::RECEIVE_AND_DELETE | ReceiveMode::PEEK_LOCK): ?self
+    {
+        $options = new ReceiveMessageOptions();
+
+        $options->setTimeout($timeout);
+        $options->setReceiveMode($mode);
+
         try {
-            $message = $this->azureServiceBusClient->receiveSubscriptionMessage($destinationName ?? $this->destinationName, $consumerName ?? $this->name, $options);
-            $receivedMessage = $message != null ||$message != '';
+            $message = $this->azureServiceBusClient->receiveSubscriptionMessage($destinationName ?? $this->destinationName, $this->name, $options);
+            $receivedMessage = $message != null || $message != '';
 
             if ($receivedMessage) {
                 $this->formatReceivedMessage($message);
@@ -52,7 +60,6 @@ class Consumer implements ConsumerInterface
             } else {
                 return null;
             }
-
         } catch (Exception $e) {
             throw $e;
         }
