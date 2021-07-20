@@ -31,9 +31,6 @@ class Consumer implements ConsumerInterface
     public function forTopic(?string $destinationName = null): self
     {
         $this->destinationName = $destinationName ?? $this->destinationName;
-
-        $this->getOrCreate($destinationName);
-
         return $this;
     }
 
