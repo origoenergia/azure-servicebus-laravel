@@ -2,11 +2,9 @@
 
 namespace OrigoEnergia\AzureServiceBusLaravel\Publisher;
 
-use Exception;
 use AzureServiceBus\ServiceBus\Internal\IServiceBus;
 use AzureServiceBus\ServiceBus\Models\BrokeredMessage;
 use OrigoEnergia\AzureServiceBusLaravel\Publisher\ProducerInterface;
-use OrigoEnergia\AzureServiceBusLaravel\Utils\ErrorHandler;
 
 class Producer implements ProducerInterface
 {
@@ -15,11 +13,11 @@ class Producer implements ProducerInterface
 
     private ?string $topic;
 
-    public function __construct(IServiceBus $azureServiceBusClient, ?string $topic = null)
+    public function __construct(?string $topic = null, IServiceBus $azureServiceBusClient)
     {
-        $this->azureServiceBusClient = $azureServiceBusClient;
-        $this->brokeredMessage = new BrokeredMessage();
         $this->topic = $topic;
+        $this->brokeredMessage = new BrokeredMessage();
+        $this->azureServiceBusClient = $azureServiceBusClient;
     }
 
     public function forTopic(?string $topic = null): self
@@ -36,10 +34,6 @@ class Producer implements ProducerInterface
 
     public function sendMessage(BrokeredMessage $brokeredMessage): void
     {
-        try {
-            $this->azureServiceBusClient->sendTopicMessage($this->topic, $brokeredMessage);
-        } catch (Exception $e) {
-            ErrorHandler::handle($e, $this->azureServiceBusClient);
-        }
+        $this->azureServiceBusClient->sendTopicMessage($this->topic, $brokeredMessage);
     }
 }

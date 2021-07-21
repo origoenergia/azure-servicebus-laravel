@@ -2,64 +2,65 @@
 
 namespace OrigoEnergia\AzureServiceBusLaravel\Subscriber;
 
-use Exception;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use AzureServiceBus\ServiceBus\Internal\IServiceBus;
 use AzureServiceBus\ServiceBus\Models\BrokeredMessage;
-use AzureServiceBus\ServiceBus\Models\SubscriptionInfo;
 use AzureServiceBus\ServiceBus\Models\ReceiveMessageOptions;
-use AzureServiceBus\ServiceBus\Models\ReceiveMode;
-use OrigoEnergia\AzureServiceBusLaravel\Utils\ErrorHandler;
 use OrigoEnergia\AzureServiceBusLaravel\Destination\Message;
 
 class Consumer implements ConsumerInterface
 {
     private string $name;
-    private ?string $destinationName;
+    private ?string $topic;
 
     private IServiceBus $azureServiceBusClient;
     private Message $formattedMessage;
 
-    public function __construct(IServiceBus $azureServiceBusClient, string $name, ?string $destinationName = null)
+    public function __construct(string $name, ?string $topic = null, IServiceBus $azureServiceBusClient)
     {
         $this->azureServiceBusClient = $azureServiceBusClient;
         $this->name = $name;
-        $this->destinationName = $destinationName;
+        $this->topic = $topic;
         $this->formattedMessage = Message::create();
     }
 
-    public function forTopic(?string $destinationName = null): self
+    public function forTopic(?string $topic = null): self
     {
-        $this->destinationName = $destinationName ?? $this->destinationName;
+        $this->topic = $topic ?? $this->topic;
         return $this;
     }
 
-    public function forSubscription(string $subscription): self
+    public function fromSubscription(string $name): self
     {
-        $this->name = $subscription;
+        $this->name = $name;
         return $this;
     }
 
-    public function receiveMessage(int $timeout = 0, int $mode = ReceiveMode::RECEIVE_AND_DELETE | ReceiveMode::PEEK_LOCK): ?self
+    public function receiveMessage(?ReceiveMessageOptions $receiveOptions = null): self
     {
-        $options = new ReceiveMessageOptions();
-
-        $options->setTimeout($timeout);
-        $options->setReceiveMode($mode);
-
-        try {
-            $message = $this->azureServiceBusClient->receiveSubscriptionMessage($destinationName ?? $this->destinationName, $this->name, $options);
-            $receivedMessage = $message != null || $message != '';
-
-            if ($receivedMessage) {
-                $this->formatReceivedMessage($message);
-                return $this;
-            } else {
-                return null;
-            }
-        } catch (Exception $e) {
-            throw $e;
+        if (is_null($receiveOptions)) {
+            $receiveOptions = new ReceiveMessageOptions();
+            $receiveOptions->setPeekLock();
+            $receiveOptions->setTimeout(0);
         }
+
+        $message = $this->azureServiceBusClient->receiveSubscriptionMessage($topic ?? $this->topic, $this->name, $receiveOptions);
+
+        if ($message) {
+            $this->formatReceivedMessage($message);
+        }
+
+        return $this;
+    }
+
+    public function receiveMessageAndDelete(): self
+    {
+        $receiveOptions = new ReceiveMessageOptions();
+        $receiveOptions->setReceiveAndDelete();
+        $receiveOptions->setTimeout(0);
+
+        $this->receiveMessage($receiveOptions);
+
+        return $this;
     }
 
     public function getMessage(): Message
@@ -67,23 +68,9 @@ class Consumer implements ConsumerInterface
         return $this->formattedMessage;
     }
 
-    public function getUnserializedMessage(): ShouldQueue
+    public function decode()
     {
-        $decodedMessage = json_decode($this->formattedMessage->getBody());
-        return unserialize($decodedMessage->data->command);
-    }
-
-    private function getOrCreate(): ?SubscriptionInfo
-    {
-        $subscriptionInfo = new SubscriptionInfo($this->name);
-        $subscriptionInfo->setMaxDeliveryCount(4);
-        $subscriptionInfo->setMessageCount(1);
-
-        try {
-            return $this->azureServiceBusClient->createSubscription($this->destinationName, $subscriptionInfo);
-        } catch (Exception $e) {
-            return ErrorHandler::handle($e, $this->azureServiceBusClient)->getSubscription($this->destinationName, $this->name);
-        }
+        return json_decode($this->formattedMessage->getBody());
     }
 
     private function formatReceivedMessage(BrokeredMessage $message)

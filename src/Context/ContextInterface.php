@@ -17,7 +17,9 @@ interface ContextInterface
     public function createQueue(string $name, ?string $description = null): QueueInfo;
     public function deleteQueue(string $name): void;
 
-    public function createTopic(string $name, ?string $description = null): TopicInfo;
+    public function createTopic(TopicInfo $topicInfo): TopicInfo;
+    public function createTopicWithGoodPerformance(string $name, string $subscription, ?string $description = null): TopicInfo;
+
     public function deleteTopic(string $name): void;
     public function getTopic(string $name): TopicInfo;
 

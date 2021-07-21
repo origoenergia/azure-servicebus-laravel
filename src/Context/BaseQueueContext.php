@@ -8,6 +8,7 @@ use AzureServiceBus\ServiceBus\Internal\IServiceBus;
 use Illuminate\Contracts\Queue\Queue as QueueContract;
 use AzureServiceBus\ServiceBus\Models\BrokeredMessage;
 use AzureServiceBus\ServiceBus\Models\ReceiveMessageOptions;
+use Exception;
 use OrigoEnergia\AzureServiceBusLaravel\Publisher\AzureServiceBusJob;
 
 class BaseQueueContext extends Queue implements QueueContract
@@ -24,7 +25,7 @@ class BaseQueueContext extends Queue implements QueueContract
      *
      * @var string
      */
-    protected string $destinationName;
+    protected string $topicOrQueue;
 
     /**
      * The options to set PeekAndLock.
@@ -37,12 +38,12 @@ class BaseQueueContext extends Queue implements QueueContract
      * Create a new Azure IQueue queue instance.
      *
      * @param \AzureServiceBus\ServiceBus\Internal\IServiceBus $azureServiceBusClient
-     * @param string $destinationName
+     * @param string $topicOrQueue
      */
-    public function __construct(IServiceBus $azureServiceBusClient, string $destinationName)
+    public function __construct(string $topicOrQueue, IServiceBus $azureServiceBusClient)
     {
+        $this->topicOrQueue = $topicOrQueue;
         $this->azureServiceBusClient = $azureServiceBusClient;
-        $this->destinationName = $destinationName;
         $this->receiveOptions = new ReceiveMessageOptions();
         $this->receiveOptions->setPeekLock();
     }
@@ -137,7 +138,7 @@ class BaseQueueContext extends Queue implements QueueContract
     }
 
     /**
-     * Get the queue or return the destinationName.
+     * Get the queue or return the topicOrQueue.
      *
      * @param string|null $queue
      *
@@ -145,7 +146,7 @@ class BaseQueueContext extends Queue implements QueueContract
      */
     public function getQueue($queue): ?string
     {
-        return $queue ?: $this->destinationName;
+        return $queue ?: $this->topicOrQueue;
     }
 
     /**
