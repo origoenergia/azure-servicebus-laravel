@@ -21,21 +21,9 @@ class ConnectionString
         return (new self())->extract();
     }
 
-    public function get(): string
-    {
-        $useSharedAccessKey = !empty(self::$params['sharedAccessKeyName']) && !empty(self::$params['sharedAccessKey']);
-
-        return $useSharedAccessKey ? $this->getWithSharedAccessKeyName() : $this->getWithSharedSecretIssuer();
-    }
-
     public function getWithSharedAccessKeyName(): string
     {
         return 'Endpoint=' . self::$params['endpoint'] . ';SharedAccessKeyName=' . self::$params['sharedAccessKeyName'] . ';SharedAccessKey=' . self::$params['sharedAccessKey'];
-    }
-
-    public function getWithSharedSecretIssuer(): string
-    {
-        return 'Endpoint=' . self::$params['endpoint'] . ';SharedSecretIssuer=' . self::$params['secretIssuer'] . ';SharedSecretValue=' . self::$params['secretValue'];
     }
 
     private function extract(): self
@@ -64,6 +52,5 @@ class ConnectionString
     private function fromSbToHttpsProtocol(string $connectionString): string
     {
         return str_replace('sb://', 'https://', $connectionString);
-        // $connectionString = -strlen(explode(';', $connectionString)[3]);
     }
 }

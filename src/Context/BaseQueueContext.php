@@ -107,7 +107,7 @@ class BaseQueueContext extends Queue implements QueueContract
         $payload = $this->createPayload($job, $queue, $data);
         $release = new \DateTime;
         $release->setTimezone(new \DateTimeZone('UTC'));
-        $release->add(new \DateInterval('PT' . $delay . 'S'));
+        $release->add(new \DateInterval('PT' . strtotime($delay) . 'S'));
         $message = new BrokeredMessage($payload);
         $message->setScheduledEnqueueTimeUtc($release);
         $this->sendInternal($this->getQueue($queue), $message);

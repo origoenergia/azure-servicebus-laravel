@@ -38,7 +38,7 @@ class AzureServiceBusConnector implements ConnectorInterface, ConnectorContextIn
 
         $connectionString = ConnectionString::createFromArray($configuration);
 
-        $azureServiceInstance = ServicesBuilder::getInstance()->createServiceBusService($connectionString->get());
+        $azureServiceInstance = ServicesBuilder::getInstance()->createServiceBusService($connectionString->getWithSharedAccessKeyName());
 
         return new AzureServiceBusContext($destination, $subscription, $azureServiceInstance);
     }
@@ -46,7 +46,7 @@ class AzureServiceBusConnector implements ConnectorInterface, ConnectorContextIn
     public static function createContextFor(string $connectionString): AzureServiceBusContext
     {
         $connectionString = ConnectionString::createFromString($connectionString);
-        $azureServiceInstance = ServicesBuilder::getInstance()->createServiceBusService($connectionString->get());
+        $azureServiceInstance = ServicesBuilder::getInstance()->createServiceBusService($connectionString->getWithSharedAccessKeyName());
 
         return new AzureServiceBusContext(null, $connectionString->getKey('entityPath'), $azureServiceInstance);
     }

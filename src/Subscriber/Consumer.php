@@ -52,6 +52,23 @@ class Consumer implements ConsumerInterface
         return $this;
     }
 
+    public function receiveQueueMessage(?ReceiveMessageOptions $receiveOptions = null): self
+    {
+        if (is_null($receiveOptions)) {
+            $receiveOptions = new ReceiveMessageOptions();
+            $receiveOptions->setPeekLock();
+            $receiveOptions->setTimeout(0);
+        }
+
+        $message = $this->azureServiceBusClient->receiveQueueMessage($this->topic, $receiveOptions);
+
+        if ($message) {
+            $this->formatReceivedMessage($message);
+        }
+
+        return $this;
+    }
+
     public function receiveMessageAndDelete(): self
     {
         $receiveOptions = new ReceiveMessageOptions();

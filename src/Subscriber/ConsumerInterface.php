@@ -10,6 +10,7 @@ interface ConsumerInterface extends PubSubCommonInterface
 {
     public function receiveMessage(ReceiveMessageOptions $receiveOptions): self;
     public function receiveMessageAndDelete(): self;
+    public function receiveQueueMessage(?ReceiveMessageOptions $receiveOptions = null): self;
     public function forTopic(?string $topic = null): self;
     public function fromSubscription(string $subscription): self;
     public function getMessage(): Message;
