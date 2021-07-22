@@ -1,7 +1,7 @@
 {
     "name": "origoenergia/azure-servicebus-laravel",
     "description": "Extending the Laravel queue to support the Microsoft Azure Service Bus Queues & topics.",
-    "version": "1.0",
+    "version": "2.0",
     "type": "library",
     "keywords": [
         "laravel",
