@@ -104,6 +104,7 @@ class BaseQueueContext extends Queue implements QueueContract
 
     public function later($delay, $job, $data = '', $queue = null): void
     {
+        $delay = date('s', strtotime($delay));
         $payload = $this->createPayload($job, $queue, $data);
         $release = new \DateTime;
         $release->setTimezone(new \DateTimeZone('UTC'));
